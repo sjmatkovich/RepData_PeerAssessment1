@@ -15,13 +15,15 @@ if(!file.exists("activity.csv")) {
   unzip(destfile)
 }
 activity <- read.csv(file="activity.csv")
+activity_valid <- na.omit(activity)
 ```
 
-## What is mean total number of steps taken per day?
+## What is the mean and median total number of steps taken per day?
 ```{r, echo = TRUE}
-activity_valid <- na.omit(activity)
-
-
+library(dplyr)
+steps <- activity_valid %>% group_by(date) %>% summarize(mean_steps = mean(steps), median_steps = median(steps))
+hist(steps$mean_steps, main="mean steps per day", xlab="mean steps")
+print(steps, n=nrow(steps))
 ```
 
 ## What is the average daily activity pattern?
