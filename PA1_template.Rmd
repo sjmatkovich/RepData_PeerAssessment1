@@ -1,5 +1,5 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
+title: "Reproducible Research: Peer Assessment 1: Scot J Matkovich"
 output: 
   html_document:
     keep_md: true
@@ -7,12 +7,22 @@ output:
 
 
 ## Loading and preprocessing the data
-
-
+```{r, echo = TRUE}
+fileURL = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+destfile = "activity.zip"
+if(!file.exists("activity.csv")) {
+  download.file(fileURL, destfile)
+  unzip(destfile)
+}
+activity <- read.csv(file="activity.csv")
+```
 
 ## What is mean total number of steps taken per day?
+```{r, echo = TRUE}
+activity_valid <- na.omit(activity)
 
 
+```
 
 ## What is the average daily activity pattern?
 
