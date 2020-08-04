@@ -7,6 +7,7 @@ output:
 
 
 ## Loading and preprocessing the data
+
 ```{r, echo = TRUE}
 fileURL = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 destfile = "activity.zip"
@@ -19,6 +20,7 @@ activity_valid <- na.omit(activity)
 ```
 
 ## What is the mean and median total number of steps taken per day?
+
 ```{r, echo = TRUE}
 library(dplyr)
 steps <- activity_valid %>% group_by(date) %>% summarize(mean_steps = mean(steps), median_steps = median(steps))
@@ -27,6 +29,7 @@ print(steps, n=nrow(steps))
 ```
 
 ## What is the average daily activity pattern?
+
 ```{r, echo = TRUE}
 intervals <- activity_valid %>% group_by(interval) %>% summarize(mean_steps = mean(steps))
 with(intervals, plot(interval, mean_steps, type="l"))
@@ -35,6 +38,40 @@ paste("Time interval with maximum mean steps is",intervals$interval[which(interv
 
 ## Imputing missing values
 
+Check if any dates or intervals are missing and issue a warning if so
+Missing step values will be imputed from the mean value for that time interval
 
+```{r, echo = TRUE}
+if (!anyNA(activity$date)) {
+  print("No missing date values")
+} else {
+    print("Missing dates - use caution")
+}
+if (!anyNA(activity$interval)) {
+  print("No missing interval values")
+} else {
+  print("Missing intervals - use caution")
+}
+activity_NA <- is.na(activity$steps)
+paste("Number of missing rows is",sum(activity_NA))
+
+activity_imputed <- activity
+for (i in 1:length(activity_imputed$steps)) {
+  if (activity_NA[i] == TRUE) {
+    activity_imputed$steps[i] <- intervals$mean_steps[which(intervals$interval == activity_imputed$interval[i])] }
+}
+
+steps_i <- activity_imputed %>% group_by(date) %>% summarize(mean_steps = mean(steps), median_steps = median(steps))
+hist(steps_i$mean_steps, main="mean steps (imputed) per day", xlab="mean steps (imputed)")
+print(steps_i, n=nrow(steps_i))
+```
+
+Average daily activity pattern including the imputed data
+
+```{r, echo = TRUE}
+intervals_i <- activity_imputed %>% group_by(interval) %>% summarize(mean_steps = mean(steps))
+with(intervals_i, plot(interval, mean_steps, type="l"))
+paste("Time interval with maximum mean steps (imputed) is",intervals_i$interval[which(intervals_i$mean_steps == max(intervals_i$mean_steps))])
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
