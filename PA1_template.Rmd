@@ -27,8 +27,11 @@ print(steps, n=nrow(steps))
 ```
 
 ## What is the average daily activity pattern?
-
-
+```{r, echo = TRUE}
+intervals <- activity_valid %>% group_by(interval) %>% summarize(mean_steps = mean(steps))
+with(intervals, plot(interval, mean_steps, type="l"))
+paste("Time interval with maximum mean steps is",intervals$interval[which(intervals$mean_steps == max(intervals$mean_steps))])
+```
 
 ## Imputing missing values
 
