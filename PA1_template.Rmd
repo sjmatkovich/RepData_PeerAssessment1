@@ -8,7 +8,7 @@ output:
 
 ## Loading and preprocessing the data
 
-```{r, echo = TRUE}
+```{r load_preprocess, echo = TRUE}
 fileURL = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 destfile = "activity.zip"
 if(!file.exists("activity.csv")) {
@@ -21,7 +21,7 @@ activity_valid <- na.omit(activity)
 
 ## What is the mean and median total number of steps taken per day?
 
-```{r, echo = TRUE}
+```{r mean_median_steps, echo = TRUE}
 library(dplyr)
 steps <- activity_valid %>% group_by(date) %>% summarize(mean_steps = mean(steps), median_steps = median(steps))
 hist(steps$mean_steps, main="mean steps per day", xlab="mean steps")
@@ -30,7 +30,7 @@ print(steps, n=nrow(steps))
 
 ## What is the average daily activity pattern?
 
-```{r, echo = TRUE}
+```{r daily_activity_pattern, echo = TRUE}
 intervals <- activity_valid %>% group_by(interval) %>% summarize(mean_steps = mean(steps))
 with(intervals, plot(interval, mean_steps, type="l"))
 paste("Time interval with maximum mean steps is",intervals$interval[which(intervals$mean_steps == max(intervals$mean_steps))])
@@ -38,10 +38,11 @@ paste("Time interval with maximum mean steps is",intervals$interval[which(interv
 
 ## Imputing missing values
 
-Check if any dates or intervals are missing and issue a warning if so
-Missing step values will be imputed from the mean value for that time interval
+Check if any dates or intervals are missing and issue a warning if true.  
+Missing step values will be imputed from the mean value for that time interval.  
+Mean and median total steps per day (with missing values imputed) will be presented.
 
-```{r, echo = TRUE}
+```{r impute_missing_values, echo = TRUE}
 if (!anyNA(activity$date)) {
   print("No missing date values")
 } else {
@@ -66,12 +67,28 @@ hist(steps_i$mean_steps, main="mean steps (imputed) per day", xlab="mean steps (
 print(steps_i, n=nrow(steps_i))
 ```
 
-Average daily activity pattern including the imputed data
+Additional analysis: what is the average daily activity pattern when including the imputed data?
 
-```{r, echo = TRUE}
+```{r daily_activity_pattern_imputed, echo = TRUE}
 intervals_i <- activity_imputed %>% group_by(interval) %>% summarize(mean_steps = mean(steps))
 with(intervals_i, plot(interval, mean_steps, type="l"))
 paste("Time interval with maximum mean steps (imputed) is",intervals_i$interval[which(intervals_i$mean_steps == max(intervals_i$mean_steps))])
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r weekdays_weekends, echo = TRUE}
+activity_imputed_dt <- activity_imputed
+activity_imputed_dt$day_type <- NULL
+for (d in 1:length(activity_imputed_dt$date)) {
+  if (weekdays(as.Date(activity_imputed_dt$date[d])) %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")) {
+    activity_imputed_dt$day_type[d] <- "weekday"
+  } else {
+    activity_imputed_dt$day_type[d] <- "weekend"
+    }
+}
+
+library(lattice)
+intervals_dt <- activity_imputed_dt %>% group_by(day_type, interval) %>% summarize(mean_steps = mean(steps))
+xyplot(mean_steps ~ interval | day_type, intervals_dt, type="l", layout=c(1,2), ylab="Mean number of steps",xlab="Interval")
+```
